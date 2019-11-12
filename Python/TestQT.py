@@ -4,7 +4,7 @@ class TreeItem(object):
     def __init__(self,name, data, parent=None):
         self.name = name
         self.parentItem = parent
-        self.itemData = data
+        self.itemData = [data]
         self.childItems = []
 
     def appendChild(self, item):
@@ -53,12 +53,23 @@ def getListFolder(root,folderList):
 df = pd.read_csv('data.txt', delimiter='|')
 folderList = [list(x) for x in df.values if x[4]=='FOLDER']
 jobList = [list(x) for x in df.values if x[4]!='FOLDER']
-for folder in folderList:
-    if folder[1]==1:
-        root.appendChild (TreeItem(folder[3]+'\\\\'+folder[2],(folder[2],'FOLDER')))
-    else:
-        child = root.findChildren(folder[3])
-        if child!=None:
-            child.appendChild (TreeItem(folder[3]+'\\\\'+folder[2],(folder[2],'FOLDER')))
+allList = [list(x) for x in df.values]
 
-print(folder,file)
+def appendItem(item,object):
+    if item[4]=='FOLDER':
+        object.appendChild (TreeItem(item[3]+'\\\\'+item[2],(item[2],item[4])))
+    else:
+        if object.data != None:
+            object.itemData.append((item[2],item[4]))
+        else:
+            object.itemData = [(item[2],item[4])]
+
+for itemList in allList:
+    if itemList[1]==1:
+        appendItem(itemList,root)
+    else:
+        child = root.findChildren(itemList[3])
+        if child!=None:
+            appendItem(itemList,child)
+
+print("allList")
