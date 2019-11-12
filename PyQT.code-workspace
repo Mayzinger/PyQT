@@ -3,5 +3,8 @@
 		{
 			"path": "Python"
 		}
-	]
+	],
+	"settings": {
+		"git.ignoreLimitWarning": true
+	}
 }
