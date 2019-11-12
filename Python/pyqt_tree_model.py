@@ -10,6 +10,17 @@ from PyQt5.QtWidgets import (QAbstractItemView, QApplication,
 import pandas as pd
 
 
+class IconProvider(QFileIconProvider):
+    def icon(self, fileInfo):
+        if fileInfo=='FOLDER':
+            return QIcon("ico/folder_closed_16.ico")
+        elif fileInfo =='JOB':
+            return QIcon("ico/job_parallel_16.ico")
+        elif fileInfo =='SEQ':
+            return QIcon("ico/job_sequence_16.ico")
+        elif fileInfo =='SER':
+            return QIcon("ico/job_server_16.ico")
+        return QFileIconProvider.icon(self, fileInfo)
 class TreeItem(object):
     def __init__(self,name, data, parent=None):
         self.name = name
@@ -57,7 +68,7 @@ class TreeItem(object):
 class TreeModel(QAbstractItemModel):
     def __init__(self, data, parent=None):
         super(TreeModel, self).__init__(parent)
-        self.iconProvider = QFileIconProvider()
+        self.iconProvider = IconProvider()
         self.rootItem = TreeItem('\\',('\\'))
         self.setupModelData(data, self.rootItem)
 
@@ -70,9 +81,9 @@ class TreeModel(QAbstractItemModel):
 
     def data(self, index, role):
         if role == Qt.DecorationRole:
-            if index.internalPointer().itemData != None and index.internalPointer().itemData[1]=='FOLDER':
-                return self.iconProvider.icon(QFileIconProvider.Folder)
-            return self.iconProvider.icon(QFileIconProvider.File)
+            if index.internalPointer().itemData != None:
+                return self.iconProvider.icon(index.internalPointer().itemData[1])
+
         if not index.isValid():
             return None
 
@@ -162,6 +173,7 @@ if __name__ == '__main__':
     import sys
 
     df = pd.read_csv('data.txt', delimiter='|')
+    #df = pd.read_csv('data_old.txt', delimiter='|')
     folderList = [list(x) for x in df.values if x[4]=='FOLDER']
     jobList = [list(x) for x in df.values if x[4]!='FOLDER']
     allList = [list(x) for x in df.values]
