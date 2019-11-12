@@ -50,7 +50,11 @@ Connection Editing Mode			Connecting widgets together with signals and slots
     Editing Connections			Changing existing connections
 """
 
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5.QtCore import (QAbstractItemModel, QFileInfo, QItemSelectionModel,
+        QModelIndex, Qt)
+from PyQt5.QtGui import QIcon
+from PyQt5.QtWidgets import (QAbstractItemView, QApplication,
+        QFileIconProvider, QListView, QSplitter, QTableView, QTreeView)
 import pandas as pd
 
 
@@ -98,12 +102,13 @@ class TreeItem(object):
         else:
             return None
 
-class TreeModel(QtCore.QAbstractItemModel):
+class TreeModel(QAbstractItemModel):
     def __init__(self, data, parent=None):
         super(TreeModel, self).__init__(parent)
-
+        self.iconProvider = QFileIconProvider()
         self.rootItem = TreeItem("1111",('2222','3333'))
         self.setupModelData(data, self.rootItem)
+
         print('Data')
     def columnCount(self, parent):
         if parent.isValid():
@@ -112,11 +117,17 @@ class TreeModel(QtCore.QAbstractItemModel):
             return self.rootItem.columnCount()
 
     def data(self, index, role):
+        if role == Qt.DecorationRole:
+            if index.internalPointer().itemData != None and index.internalPointer().itemData[1]=='FOLDER':
+                return self.iconProvider.icon(QFileIconProvider.Folder)
+            return self.iconProvider.icon(QFileIconProvider.File)
         if not index.isValid():
             return None
 
-        if role != QtCore.Qt.DisplayRole:
+        if role != Qt.DisplayRole:
             return None
+
+
 
         item = index.internalPointer()
 
@@ -124,19 +135,19 @@ class TreeModel(QtCore.QAbstractItemModel):
 
     def flags(self, index):
         if not index.isValid():
-            return QtCore.Qt.NoItemFlags
+            return Qt.NoItemFlags
 
-        return QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable
+        return Qt.ItemIsEnabled | Qt.ItemIsSelectable
 
     def headerData(self, section, orientation, role):
-        if orientation == QtCore.Qt.Horizontal and role == QtCore.Qt.DisplayRole:
+        if orientation == Qt.Horizontal and role == Qt.DisplayRole:
             return self.rootItem.data(section)
 
         return None
 
     def index(self, row, column, parent):
         if not self.hasIndex(row, column, parent):
-            return QtCore.QModelIndex()
+            return QModelIndex()
 
         if not parent.isValid():
             parentItem = self.rootItem
@@ -147,17 +158,17 @@ class TreeModel(QtCore.QAbstractItemModel):
         if childItem:
             return self.createIndex(row, column, childItem)
         else:
-            return QtCore.QModelIndex()
+            return QModelIndex()
 
     def parent(self, index):
         if not index.isValid():
-            return QtCore.QModelIndex()
+            return QModelIndex()
 
         childItem = index.internalPointer()
         parentItem = childItem.parent()
 
         if parentItem == self.rootItem:
-            return QtCore.QModelIndex()
+            return QModelIndex()
 
         return self.createIndex(parentItem.row(), 0, parentItem)
 
@@ -200,14 +211,14 @@ if __name__ == '__main__':
     jobList = [list(x) for x in df.values if x[4]!='FOLDER']
     allList = [list(x) for x in df.values]
 
-    app = QtWidgets.QApplication(sys.argv)
+    app = QApplication(sys.argv)
 
-    f = QtCore.QFile('default.txt')
-    f.open(QtCore.QIODevice.ReadOnly)
+    # f = QFile('default.txt')
+    # f.open(QIODevice.ReadOnly)
     model = TreeModel(allList)
-    f.close()
+    # f.close()
 
-    view = QtWidgets.QTreeView()
+    view = QTreeView()
     view.setModel(model)
     view.setWindowTitle("Simple Tree Model")
     view.show()
