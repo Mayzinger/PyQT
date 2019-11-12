@@ -44,11 +44,12 @@ class TreeItem(object):
         else:
             return None
 
+def getListFolder(root,folderList):
+    pass
 
 
 root = TreeItem("\\\\_DWH\\\\10_DWH\\\\BIS\\\\CREDIT",('CREDIT','FOLDER'))
-def getListFolder(root,folderList):
-    pass
+
 
 df = pd.read_csv('data.txt', delimiter='|')
 folderList = [list(x) for x in df.values if x[4]=='FOLDER']

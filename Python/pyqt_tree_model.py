@@ -51,10 +51,12 @@ Connection Editing Mode			Connecting widgets together with signals and slots
 """
 
 from PyQt5 import QtCore, QtGui, QtWidgets
+import pandas as pd
 
 
 class TreeItem(object):
-    def __init__(self, data, parent=None):
+    def __init__(self,name, data, parent=None):
+        self.name = name
         self.parentItem = parent
         self.itemData = data
         self.childItems = []
@@ -85,14 +87,23 @@ class TreeItem(object):
             return self.parentItem.childItems.index(self)
 
         return 0
-
+    def findChildren(self,nameChildren):
+        if self.name == nameChildren:
+            return self
+        elif self.childCount()>0:
+            for child in self.childItems:
+                ch = child.findChildren(nameChildren)
+                if ch != None:
+                    return ch
+        else:
+            return None
 
 class TreeModel(QtCore.QAbstractItemModel):
     def __init__(self, data, parent=None):
         super(TreeModel, self).__init__(parent)
 
-        self.rootItem = TreeItem(("Title", "Summary","FOLDER"))
-        self.setupModelData(data.split('\n'), self.rootItem)
+        self.rootItem = TreeItem("1111",('2222','3333'))
+        self.setupModelData(data, self.rootItem)
         print('Data')
     def columnCount(self, parent):
         if parent.isValid():
@@ -161,52 +172,39 @@ class TreeModel(QtCore.QAbstractItemModel):
 
         return parentItem.childCount()
 
-    def setupModelData(self, lines, parent):
-        parents = [parent]
-        indentations = [0]
+    def setupModelData(self, allList, parent):
+        for itemList in allList:
+            if itemList[1]==1 and itemList[4]=='FOLDER':
+                self.appendItem(itemList,parent)
+            else:
+                child = parent.findChildren(itemList[3])
+                if child!=None:
+                    self.appendItem(itemList,child)
 
-        number = 0
-
-        while number < len(lines):
-            position = 0
-            while position < len(lines[number]):
-                if lines[number][position] != b' ':
-                    break
-                position += 1
-
-            lineData = lines[number][position:].trimmed()
-
-            if lineData:
-                # Read the column data from the rest of the line.
-                columnData = [s for s in lineData.split('\t') if s]
-
-                if position > indentations[-1]:
-                    # The last child of the current parent is now the new
-                    # parent unless the current parent has no children.
-
-                    if parents[-1].childCount() > 0:
-                        parents.append(parents[-1].child(parents[-1].childCount() - 1))
-                        indentations.append(position)
-
-                else:
-                    while position < indentations[-1] and len(parents) > 0:
-                        parents.pop()
-                        indentations.pop()
-
-                # Append a new item to the current parent's list of children.
-                parents[-1].appendChild(TreeItem(columnData, parents[-1]))
-
-            number += 1
+    def appendItem(self,item,object):
+        if item[4]=='FOLDER':
+            object.appendChild (TreeItem(item[3]+'\\\\'+item[2],(item[2],item[4]),object))
+        else:
+            object.appendChild (TreeItem(item[3],(item[2],item[4]),object))
+            # if object.itemData != None:
+            #     object.itemData = object.itemData+((item[2],item[4]))
+            # else:
+            #     object.itemData = (item[2],item[4])
 
 
 if __name__ == '__main__':
     import sys
 
+    df = pd.read_csv('data.txt', delimiter='|')
+    folderList = [list(x) for x in df.values if x[4]=='FOLDER']
+    jobList = [list(x) for x in df.values if x[4]!='FOLDER']
+    allList = [list(x) for x in df.values]
+
     app = QtWidgets.QApplication(sys.argv)
 
     f = QtCore.QFile('default.txt')
     f.open(QtCore.QIODevice.ReadOnly)
-    model = TreeModel(f.readAll())
+    model = TreeModel(allList)
     f.close()
 
     view = QtWidgets.QTreeView()
