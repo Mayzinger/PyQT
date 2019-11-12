@@ -1,54 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""
-longqi 20/Jan/16 22:42
 
-"""
-"""
-default.txt
-"""
-"""
-Getting Started				How to familiarize yourself with Qt Designer
-    Launching Designer			Running the Qt Designer application
-    The User Interface			How to interact with Qt Designer
-
-Designing a Component			Creating a GUI for your application
-    Creating a Dialog			How to create a dialog
-    Composing the Dialog		Putting widgets into the dialog example
-    Creating a Layout			Arranging widgets on a form
-    Signal and Slot Connections		Making widget communicate with each other
-
-Using a Component in Your Application	Generating code from forms
-    The Direct Approach			Using a form without any adjustments
-    The Single Inheritance Approach	Subclassing a form's base class
-    The Multiple Inheritance Approach	Subclassing the form itself
-    Automatic Connections		Connecting widgets using a naming scheme
-        A Dialog Without Auto-Connect	How to connect widgets without a naming scheme
-        A Dialog With Auto-Connect	Using automatic connections
-
-Form Editing Mode			How to edit a form in Qt Designer
-    Managing Forms			Loading and saving forms
-    Editing a Form			Basic editing techniques
-    The Property Editor			Changing widget properties
-    The Object Inspector		Examining the hierarchy of objects on a form
-    Layouts				Objects that arrange widgets on a form
-        Applying and Breaking Layouts	Managing widgets in layouts
-        Horizontal and Vertical Layouts	Standard row and column layouts
-        The Grid Layout			Arranging widgets in a matrix
-    Previewing Forms			Checking that the design works
-
-Using Containers			How to group widgets together
-    General Features			Common container features
-    Frames				QFrame
-    Group Boxes				QGroupBox
-    Stacked Widgets			QStackedWidget
-    Tab Widgets				QTabWidget
-    Toolbox Widgets			QToolBox
-
-Connection Editing Mode			Connecting widgets together with signals and slots
-    Connecting Objects			Making connections in Qt Designer
-    Editing Connections			Changing existing connections
-"""
 
 from PyQt5.QtCore import (QAbstractItemModel, QFileInfo, QItemSelectionModel,
         QModelIndex, Qt)
@@ -106,7 +58,7 @@ class TreeModel(QAbstractItemModel):
     def __init__(self, data, parent=None):
         super(TreeModel, self).__init__(parent)
         self.iconProvider = QFileIconProvider()
-        self.rootItem = TreeItem("1111",('2222','3333'))
+        self.rootItem = TreeItem('\\',('\\'))
         self.setupModelData(data, self.rootItem)
 
         print('Data')
@@ -194,7 +146,10 @@ class TreeModel(QAbstractItemModel):
 
     def appendItem(self,item,object):
         if item[4]=='FOLDER':
-            object.appendChild (TreeItem(item[3]+'\\\\'+item[2],(item[2],item[4]),object))
+            sep = '\\\\'
+            if item[3]=='\\\\':
+                sep = ''
+            object.appendChild (TreeItem(item[3]+sep+item[2],(item[2],item[4]),object))
         else:
             object.appendChild (TreeItem(item[3],(item[2],item[4]),object))
             # if object.itemData != None:
